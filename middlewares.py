@@ -6,6 +6,7 @@
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
+import random
 
 
 class BadboySpiderMiddleware(object):
@@ -101,3 +102,16 @@ class BadboyDownloaderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class ProxyMiddleware(object):
+    def process_request(self, request, spider):
+        # 代理服务器
+        proxyServer = "transfer.mogumiao.com:9001"
+
+        # appkey为你订单的key
+        proxyAuth = "Basic " + '***'
+
+        request.meta["proxy"] = proxyServer
+
+        request.headers["Authorization"] = proxyAuth

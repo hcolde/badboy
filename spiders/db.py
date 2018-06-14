@@ -48,3 +48,19 @@ class Database:
 	def close(self):
 		# 关闭数据库连接.
 		self.db.close()
+
+def connect():
+	'''
+	连接数据库.
+	'''
+
+	l = []
+	with open('db.txt', 'r') as f:
+		for line in f.readlines():
+			l.append(''.join(line.split()))
+	host=l.pop(0)
+	user=l.pop(0)
+	password=l.pop(0)
+	dbName=l.pop(0)
+	db = Database(host, user, password, dbName)
+	return db

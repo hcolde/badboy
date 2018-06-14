@@ -2,7 +2,7 @@
 import scrapy
 import json
 import threading
-from .db import Database
+from .db import Database, connect
 
 
 class LgspiderSpider(scrapy.Spider):
@@ -12,33 +12,42 @@ class LgspiderSpider(scrapy.Spider):
 		r'https://m.lagou.com/search.json?city=%E5%B9%BF%E5%B7%9E&positionName=python&pageNo=1'
 	]
 
-	pageSize = 0
-	totalCount = 0
+	pageSize = 0 # 每页显示多少条信息.
+	totalCount = 0 # 总共有多少条信息.
+	id_list = [] # 数据库已保存的job's positionId.
 
-	def parse(self, response):
-		def create():
-			'''
-			创建数据表.
-			'''
-			db = self.connect()
+	def __init__(self):
+		'''
+		初始化时查询数据库里已经保存了哪些job(positionId)，
+		对已保存的job不再爬取.
+		'''
+		
+		def createAndSelect():
+			db = connect()
 			sql = '''
 				CREATE TABLE IF NOT EXISTS `job`(
-					`id` INT AUTO_INCREMENT,
 					`positionId` INT,
 					`positionName` VARCHAR(50),
 					`salary` VARCHAR(10),
 					`createTime` VARCHAR(10),
 					`companyFullName` VARCHAR(50),
-					PRIMARY KEY (`id`)
+					PRIMARY KEY (`positionId`)
 				)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 			'''
 			sql = sql.replace('\t', '').replace('\n', '')
 			db.process(sql=sql)
+			sql = 'SELECT DISTINCT `positionId` FROM `job`'
+			result = db.process(sql=sql, ret=True, multi=True)
+			for id_dict in result:
+				self.id_list.append(id_dict['positionId'])
 			db.close()
 
-		t = threading.Thread(target=create)
+		t = threading.Thread(target=createAndSelect)
 		t.start()
 		t.join()
+
+	def parse(self, response):
+		
 
 		self.data_processing(response)
 
@@ -84,7 +93,7 @@ class LgspiderSpider(scrapy.Spider):
 			插入数据.
 			'''
 
-			db = self.connect()
+			db = connect()
 			sql = '''
 				INSERT INTO `job`(
 					`positionId`,
@@ -98,6 +107,8 @@ class LgspiderSpider(scrapy.Spider):
 			ret = db.commit(sql)
 			if ret:
 				self.log(ret)
+			else:
+				self.log('append a new job:'+str(positionId))
 			db.close()
 
 		for result in results:
@@ -106,22 +117,12 @@ class LgspiderSpider(scrapy.Spider):
 			salary = result.setdefault('salary')
 			time = result.setdefault('createTime')
 			company = result.setdefault('companyFullName')
-			t = threading.Thread(target=insert, args=(positionId,
-													  name,
-													  salary,
-													  time,
-													  company))
-			t.start()
-			t.join()
-
-	def connect(self):
-		'''
-		连接数据库.
-		'''
-
-		host='111.230.110.103'
-		user='root'
-		password='HuanG3213507'
-		dbName='lagou'
-		db = Database(host, user, password, dbName)
-		return db
+			if positionId not in self. id_list:
+				self.log('new job:'+str(positionId))
+				t = threading.Thread(target=insert,args=(positionId,
+														 name,
+														 salary,
+														 time,
+														 company))
+				t.start()
+				t.join()
