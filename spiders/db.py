@@ -8,11 +8,11 @@ class Database:
 	def __init__(self, host='127.0.0.1', user='root', password='', dbName=None):
 		# 打开数据库连接.
 		self.db = pymysql.connect(host=host,
-								  user=user,
-								  password=password,
-								  db=dbName,
-								  charset='utf8mb4',
-								  cursorclass=pymysql.cursors.DictCursor) 
+					  user=user,
+					  password=password,
+					  db=dbName,
+					  charset='utf8mb4',
+					  cursorclass=pymysql.cursors.DictCursor) 
 		# 使用 cursor() 方法创建一个游标对象 cursor.
 		self.cursor = self.db.cursor()
 
