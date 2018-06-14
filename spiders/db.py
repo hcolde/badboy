@@ -7,7 +7,8 @@ class Database:
 
 	def __init__(self, host='127.0.0.1', user='root', password='', dbName=None):
 		# 打开数据库连接.
-		self.db = pymysql.connect(host=host,
+		self.db = pymysql.connect(
+					  host=host,
 					  user=user,
 					  password=password,
 					  db=dbName,

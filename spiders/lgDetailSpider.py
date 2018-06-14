@@ -131,4 +131,8 @@ class LgdetailSpider(scrapy.Spider):
 			self.log('待重爬')
 			if response.url not in self.cp:
 				self.cp.append(response.url)
-			yield scrapy.Request(url=response.url, headers=response.headers, dont_filter=True, callback=self.parse)
+			yield scrapy.Request(
+						  url=response.url,
+						  headers=response.headers,
+						  dont_filter=True,
+						  callback=self.parse)
