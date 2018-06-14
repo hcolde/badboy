@@ -47,10 +47,7 @@ class LgspiderSpider(scrapy.Spider):
 		t.join()
 
 	def parse(self, response):
-		
-
 		self.data_processing(response)
-
 		# 获取分页整数.
 		pages = self.totalCount//self.pageSize
 		pages = pages+1 if self.totalCount%self.pageSize else pages
