@@ -119,11 +119,10 @@ class LgspiderSpider(scrapy.Spider):
 			company = result.setdefault('companyFullName')
 			if positionId not in self. id_list:
 				self.log('new job:'+str(positionId))
-				t = threading.Thread(target=insert,args=(
-							  positionId,
-							  name,
-							  salary,
-							  time,
-							  company))
+				t = threading.Thread(target=insert,args=(positionId,
+									  name,
+									  salary,
+									  time,
+									  company))
 				t.start()
 				t.join()
